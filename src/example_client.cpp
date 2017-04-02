@@ -1,4 +1,5 @@
 #include "battlesnake_api.hpp"
+#include <stdexcept>
 
 // Callback that will be called when a new game starts (on start request).
 // See https://stembolthq.github.io/battle_snake/#post-start
