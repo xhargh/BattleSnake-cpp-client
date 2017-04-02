@@ -19,7 +19,7 @@ const bool debug = true;
         s.name = j["name"].get<std::string>();
         s.id = j["id"].get<std::string>();
         s.health_points = j["health_points"].get<int>();
-        //s.coords = j["coords"].get<Points>;
+        s.coords = j["coords"].get<Points>();
 
         {
             const nlohmann::json taunt = j["taunt"];
