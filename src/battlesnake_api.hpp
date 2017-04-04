@@ -1,9 +1,9 @@
 
 #pragma once
-#include <json.hpp>
+#include "json.hpp"
 #include <vector>
 
-enum class Move {
+enum class Direction {
     up,
     left,
     down,
@@ -13,22 +13,30 @@ enum class Move {
 // Move response, with an optional taunt.
 class Move_response {
 public:
-    explicit Move_response(const Move move) : move(move) {};
-    Move_response(const Move move, const std::string& taunt) : move(move), taunt(taunt) {};
-    Move move;
+    explicit Move_response(const Direction direction_) : direction(direction_) {};
+    Move_response(const Direction direction, const std::string& taunt) : direction(direction), taunt(taunt) {};
+    Direction direction;
     std::string taunt;
 };
 
 // Callback for start requests.
-nlohmann::json battlesnake_start(const std::string& game_id, const int height, const int width);
+nlohmann::json battlesnake_start(const std::string& game_id, const int width, const int height);
 
 
 struct Point {
     Point() {};
     Point(const int x, const int y) : x(x), y(y) {};
+
     int x = 0;
     int y = 0;
 };
+
+inline std::ostream & operator<<(std::ostream &os, const Point& p)
+{
+    return os << "(" << p.x << ", " << p.y << ")";
+}
+
+
 using Points = std::vector<Point>;
 
 struct Snake {
@@ -45,10 +53,10 @@ using Snakes = std::vector<Snake>;
 // 'you' is the index of your snake in the snakes array.
 // TODO: What if dead?
 Move_response battlesnake_move(
-        const Points& food,
         const std::string& game_id,
-        const int height,
         const int width,
+        const int height,
+        const Points& food,
         const Snakes& snakes,
         const Snakes& dead_snakes,
-        const size_t you);
+        const size_t my_snake_index);
