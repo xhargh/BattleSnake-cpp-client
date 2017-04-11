@@ -1,11 +1,11 @@
 
 // Used to enable debug printouts.
-const bool debug = true;
+const bool debug = false;
+const bool print_move = true;
 
 
 #include "rest_router.hpp"
-
-#include <json.hpp>
+#include "json.hpp"
 #include <pistache/mime.h>
 #include <pistache/router.h>
 #include "battlesnake_api.hpp"
@@ -29,18 +29,18 @@ const bool debug = true;
         }
     }
 
-    void to_json(nlohmann::json& j, const Move& m) {
+    void to_json(nlohmann::json& j, const Direction& m) {
     switch(m) {
-    case Move::up:
+    case Direction::up:
         j = "up";
         break;
-    case Move::left:
+    case Direction::left:
         j = "left";
         break;
-    case Move::down:
+    case Direction::down:
         j = "down";
         break;
-    case Move::right:
+    case Direction::right:
         j = "right";
         break;
     }
@@ -56,11 +56,11 @@ Net::Rest::Router get_router() {
             nlohmann::json req = nlohmann::json::parse(request.body());
 
             auto game_id = req["game_id"].get<std::string>();
-            auto height = req["height"].get<int>();
             auto width = req["width"].get<int>();
+            auto height = req["height"].get<int>();
 
             // battlesnake_start() is implemented by the user.
-            auto response_body = battlesnake_start(game_id, height, width);
+            auto response_body = battlesnake_start(game_id, width, height);
 
             response.send(Net::Http::Code::Ok, response_body.dump(4), MIME(Application, Json));
 
@@ -87,15 +87,14 @@ Net::Rest::Router get_router() {
 
             const Snakes snakes = req["snakes"].get<Snakes>();
             const std::string you_uuid = req["you"];
-            size_t you = -1;
+            size_t my_snake_index = -1;
             for (size_t i = 0; i < snakes.size(); ++i) {
-                std::cout << "+++ " << snakes[i].id << std::endl;
                 if (snakes[i].id == you_uuid) {
-                    you = i;
+                    my_snake_index = i;
                     break;
                 }
             }
-            if (you < 0) {
+            if (my_snake_index < 0) {
                 throw std::runtime_error("Could not find you uuid in list of snakes.");
             }
 
@@ -103,16 +102,16 @@ Net::Rest::Router get_router() {
 
             // battlesnake_start() is implemented by the user.
             auto move = battlesnake_move(
-                    req["food"].get<Points>(),
                     req["game_id"].get<std::string>(),
-                    req["height"].get<int>(),
                     req["width"].get<int>(),
+                    req["height"].get<int>(),
+                    req["food"].get<Points>(),
                     snakes,
                     req["dead_snakes"].get<Snakes>(),
-                    you);
+                    my_snake_index);
 
             response_body = nlohmann::json::object();
-            response_body["move"] = move.move;
+            response_body["move"] = move.direction;
 
             if (!move.taunt.empty()) {
                 response_body["taunt"] = move.taunt;
@@ -120,7 +119,9 @@ Net::Rest::Router get_router() {
 
             if (debug) {
                 std::cout << "RESPONSE:" << std::endl;
-                std::cout << response_body.dump(4) << std::endl << std::endl;
+            }
+            if (debug || print_move) {
+                std::cout << response_body << std::endl << std::endl;
             }
 
 

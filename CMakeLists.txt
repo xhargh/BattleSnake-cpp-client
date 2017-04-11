@@ -4,11 +4,8 @@ set (CMAKE_ECLIPSE_VERSION "4.6")
 
 find_library(pistache REQUIRED)
 
-#find_library(RapidJSON REQUIRED)
-#find_library(boost)
-#include_directories(${RapidJSON_INCLUDE_DIRS})
-
-include_directories(${CMAKE_SOURCE_DIR}/include)
+# Boost
+include_directories(/home/acorn/installs/boost_1_63_0)
 
 ADD_EXECUTABLE(battlesnake-client
 	src/xhargh_client.cpp
