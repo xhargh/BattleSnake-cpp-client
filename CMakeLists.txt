@@ -11,7 +11,7 @@ find_library(pistache REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 ADD_EXECUTABLE(battlesnake-client
-	src/example_client.cpp
+	src/xhargh_client.cpp
 	src/main.cpp
 	src/rest_router.cpp
 )
