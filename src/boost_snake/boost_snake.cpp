@@ -1,14 +1,12 @@
-#include "battlesnake_api.hpp"
+#include <api/battlesnake.hpp>
+#include "api/util.h"
 #include "board.hpp"
-#include "util.h"
 #include <iostream>
-static void run_tests();
 
 
 // Callback that will be called when a new game starts (on start request).
 // See https://stembolthq.github.io/battle_snake/#post-start
 nlohmann::json battlesnake_start(const std::string& game_id, const int width, const int height) {
-    run_tests();
     std::cout << "*** New game started *** width=" << width << ", height=" << height <<
             ", id=" << game_id << ".\n";
 
@@ -51,15 +49,15 @@ Move_response battlesnake_move(
     auto graph = get_graph(board);
 
     // Graph vertex representing my snake's head.
-    board::Vertex my_snake_head_vertex = board.get_vertex(my_snake_head);
+    board::Vertex my_snake_head_vertex = board::to_vertex(my_snake_head);
 
 
     // Print a list of valid moves.
     board::Graph::out_edge_iterator e, e_end;
     std::cout << "Valid moves:" << std::endl;
     for (tie(e, e_end) = out_edges(my_snake_head_vertex, graph); e != e_end; ++e) {
-        std::cout << "From " << board.get_point(source(*e, graph))
-                  << " to " << board.get_point(target(*e, graph))  << ". Direction: " << board::getDirection(*e, graph) << std::endl;
+        std::cout << "From " << board::to_point(source(*e, graph))
+                  << " to " << board::to_point(target(*e, graph))  << ". Direction: " << board::getDirection(*e, graph) << std::endl;
     }
     std::cout << std::endl;
 
@@ -71,10 +69,4 @@ Move_response battlesnake_move(
     } else {
         return Move_response(Direction::left, "Ohh noo! Nowhere to go!");
     }
-}
-
-
-static void run_tests() {
-    assert(util::distance(Point(1,2),  Point(5,10)) == 4 + 8);
-    assert(util::distance(Point(5,10), Point(1,2)) == 4 + 8);
 }

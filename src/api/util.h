@@ -1,5 +1,5 @@
 #pragma once
-#include "battlesnake_api.hpp"
+#include "battlesnake.hpp"
 #include <cmath>
 
 namespace util {

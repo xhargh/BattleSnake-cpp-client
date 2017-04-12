@@ -1,4 +1,4 @@
-#include "battlesnake_api.hpp"
+#include <api/battlesnake.hpp>
 #include <boost/graph/grid_graph.hpp>
 #include <boost/graph/filtered_graph.hpp>
 #include <array>
@@ -10,43 +10,38 @@ namespace board {
 
 
 struct Square {
-    bool avoid = false; ///< True if a snake occupies this square.
+    // `avoid` is true if a snake occupies this square.
+    bool avoid = false;
 };
 
 
 
 // Represents a fully connected grid layout graph.
-using Full_grid = boost::grid_graph<2>;
+using Full_grid = boost::grid_graph<2, int>;
 
-// Vertex descriptor.
-using Vertex = boost::graph_traits<Full_grid>::vertex_descriptor;
+// Vertex descriptor. NOTE: Vertex of filtered graph have another type.
+using Vertex = boost::array<int, 2>; //boost::graph_traits<Full_grid>::vertex_descriptor;
 
-// Edge descriptor representing an edge in the graph. NOTE: Filtered graph have anothe
+// Edge descriptor representing an edge in the graph. NOTE: Edges of filtered graph have another type.
 using Edge = boost::graph_traits<Full_grid>::edge_descriptor;
+
+// Convert a Point to a vertex descriptor.
+inline Vertex to_vertex(const Point& p) {
+    return { {p.x, p.y} };
+}
+
+// Convert a vertex descriptor to a Point.
+inline Point to_point(const Vertex& v) {
+    return Point(v[0], v[1]);
+}
 
 class Board {
 public:
-
     Board(const int width, const int height) :
             width(width),
             height(height),
             full_grid_graph(create_full_grid_graph(width, height)) {
         squares.resize(width * height);
-    }
-
-    const Full_grid& get_full_grid() const {
-        return full_grid_graph;
-    }
-
-    // Get the vertex descriptor representing a point.
-    Vertex get_vertex(const Point& p) const {
-        return vertex(p.x + p.y*width, full_grid_graph);
-    }
-
-    // Get the point represented by the given vertex descriptor.
-    Point get_point(const Vertex& v) const {
-        assert(v[0] < width && v[1] < height);
-        return Point(v[0], v[1]);
     }
 
     Square& get_square(const Point& p) {
@@ -57,12 +52,16 @@ public:
         return squares[p.x + p.y*width];
     }
 
-private:
-    Full_grid create_full_grid_graph(const std::size_t& width, const std::size_t& height) {
-        boost::array<std::size_t, 2> lengths = { {width, height} };
-        return boost::grid_graph<2>(lengths);
+    // Only used by get_graph() below.
+    const Full_grid& _get_full_grid() const {
+        return full_grid_graph;
     }
-
+private:
+    // Create the full grid graph.
+    Full_grid create_full_grid_graph(const int width, const int height) {
+        boost::array<int, 2> lengths = { {width, height} };
+        return Full_grid(lengths);
+    }
 
     const int width;
     const int height;
@@ -87,7 +86,7 @@ struct Valid_move {
     template <typename EdgeT>
     bool operator()(const EdgeT& e) const {
         assert(board);
-        const auto target = board->get_point(e.second);//boost::target(e, board->get_full_grid());
+        const auto target = to_point(e.second);
         return !board->get_square(target).avoid;
     }
 
@@ -102,7 +101,7 @@ using Graph = boost::filtered_graph<Full_grid, Valid_move>;
 // Get a filtered graph representing valid moves on the board.
 Graph get_graph(const Board& board) {
     Valid_move valid_move(board);
-    Graph g(board.get_full_grid(), valid_move);
+    Graph g(board._get_full_grid(), valid_move);
     return g;
 }
 

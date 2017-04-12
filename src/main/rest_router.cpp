@@ -6,9 +6,9 @@ const bool print_move = true;
 
 #include "rest_router.hpp"
 #include "json.hpp"
+#include <api/battlesnake.hpp>
 #include <pistache/mime.h>
 #include <pistache/router.h>
-#include "battlesnake_api.hpp"
 
     void from_json(const nlohmann::json& j, Point& p) {
         p.x = j[0];
