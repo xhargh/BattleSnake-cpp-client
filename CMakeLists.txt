@@ -9,6 +9,7 @@ include_directories(/home/acorn/installs/boost_1_63_0)
 
 ADD_EXECUTABLE(battlesnake-client
 	src/example_client.cpp
+	#src/gustavs_snake.cpp
 	src/main.cpp
 	src/rest_router.cpp
 )

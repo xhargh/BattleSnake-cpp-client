@@ -10,6 +10,25 @@ enum class Direction {
     right
 };
 
+inline std::ostream & operator<<(std::ostream &os, const Direction& d)
+{
+    switch(d) {
+    case Direction::up:
+        os << "up";
+        break;
+    case Direction::left:
+        os << "left";
+        break;
+    case Direction::down:
+        os << "down";
+        break;
+    case Direction::right:
+        os << "right";
+        break;
+    }
+    return os;
+}
+
 // Move response, with an optional taunt.
 class Move_response {
 public:
