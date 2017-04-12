@@ -1,7 +1,7 @@
 #pragma once
 #include "battlesnake_api.hpp"
 #include <cmath>
-#include <boost/graph/graph_concepts.hpp>
+// #include <boost/graph/graph_concepts.hpp>
 
 namespace util {
 

@@ -1,12 +1,19 @@
 #include "battlesnake_api.hpp"
+#include "util.h"
 #include <stdexcept>
 #include <set>
+
+static int seed = time(NULL);
 
 // Callback that will be called when a new game starts (on start request).
 // See https://stembolthq.github.io/battle_snake/#post-start
 nlohmann::json battlesnake_start(const std::string& game_id, const int width, const int height) {
+    srand(seed++);
+    std::ostringstream color;
+    color << "#" << std::hex << (rand() & 0xffffff);
+    std::cout << "color : " << color.str() << std::endl;
     return {
-        {"color", "#FF0000"},
+        {"color", color.str()},
         {"secondary_color", "#00FF00"},
         //{"head_url", "http://placecage.com/c/100/100"},
         {"name", "Cage Snake"},
@@ -16,13 +23,71 @@ nlohmann::json battlesnake_start(const std::string& game_id, const int width, co
     };
 }
 
-bool allowedMove(char* battlefield, const int width, const int height, const int x, const int y) {
-    if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) {
-        std::cout << "outside" << std::endl;
-        return false;
+class Battlefield {
+private:
+    const int width;
+    const int height;
+    char* grid;
+public:
+    Battlefield(const int width, const int height) :
+            width(width),
+            height(height)
+    {
+        grid = new char[width*height]();
+        memset(grid, '.', width*height);
     }
-    char pt = battlefield[x+y*width];
-    return ('#' == pt) || ('*' == pt) || ('.' == pt); // Food or clear field
+
+    ~Battlefield() {
+        delete[] grid;
+    }
+
+    bool allowedMove(const int x, const int y) {
+        if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) {
+            return false;
+        }
+        char pt = grid[x+y*width];
+        return ('#' == pt) || // closest food
+               ('*' == pt) || // other food
+               ('.' == pt) || // clear field
+               (',' == pt) || // tail
+               ('o' == pt);   // head of shorter snake
+    }
+
+    bool allowedMove(const Point p) {
+        return allowedMove(p.x, p.y);
+    }
+
+    void mark(const int x, const int y, char val) {
+        if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) {
+            return;
+        }
+        grid[x+y*width] = val;
+    }
+
+    void mark(const Point p, char val) {
+        mark(p.x, p.y, val);
+    }
+
+    char Get(const int x, const int y) {
+        return grid[x + y * width];
+    }
+
+    char Get(const Point p) {
+        return Get(p.x, p.y);
+    }
+};
+
+Point operator+(const Point p, const Direction& dir) {
+    switch (dir) {
+        case Direction::down: return Point(p.x, p.y+1);
+        case Direction::up: return Point(p.x, p.y-1);
+        case Direction::left: return Point(p.x-1, p.y);
+        case Direction::right: return Point(p.x+1, p.y);
+    }
+}
+
+Point operator-(const Point p1, const Point p2) {
+    return Point(p1.x - p2.x, p1.y - p2.y);
 }
 
 // Callback that will be called on move requests.
@@ -35,72 +100,64 @@ Move_response battlesnake_move(
         const Snakes& dead_snakes,
         const size_t you) {
     using namespace std;
-    char* battlefield = new char[width*height]();
-    memset(battlefield, '.', width*height);
+    Battlefield b(width, height);
 
-    // Draw alive snakes (lower case letters)
-    int c = 'a';
+    // Draw alive snakes
+    char c = 'a';
     for (auto& snake : snakes) {
         cout << "snake: " << snake.id << " " << snake.name << endl;
         for (auto& pt : snake.coords) {
-            battlefield[pt.x+pt.y*width] = c;
+            b.mark(pt, c);
         }
         c++;
     }
 
-    // Draw dead snakes (upper case letters)
-    c = 'A';
-    for (auto& snake : dead_snakes) {
-        for (auto& pt : snake.coords) {
-            battlefield[pt.x+pt.y*width] = c;
-        }
-        c++;
-    }
+    // Don't draw dead snakes, since they can be passed
 
     // Draw food
     for (auto& f : food) {
-        battlefield[f.x + f.y * width] = '*';
+        b.mark(f, '*');
     }
 
     // Assuming 'you' is the index of my snake
     auto myHead = snakes[you].coords[0];
-    battlefield[myHead.x + myHead.y * width] = '@';
+    b.mark(myHead, '@');
 
     // Find closest food
     Point closestFood;
-    double minDistance = sqrt(height * height + width * width) + 1;
+    double minDistance = width+height;
     for (auto& f : food) {
-        int a = f.x - myHead.x;
-        int b = f.y - myHead.y;
-        double distance = sqrt(a*a + b*b);
-        if (distance < minDistance) {
+        int dist = util::distance(f, myHead);
+        if (dist < minDistance) {
             closestFood = f;
-            minDistance = distance;
+            minDistance = dist;
         }
     }
-    battlefield[closestFood.x + closestFood.y * width] = '#';
+    b.mark(closestFood, '#');
+
+    // 'iterate' one step by marking all possible next steps + removing the tails
+    for (int i = 0; i < snakes.size(); i++) {
+        auto& snake = snakes[i];
+        Point head = snake.coords[0];
+        Point tail = snake.coords[snake.coords.size()-1];
+
+        if (i != you) {
+            char mark = snake.coords.size() > snakes[you].coords.size() ? ('A'+i) : 'o';
+            for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
+                if (b.allowedMove(head + dir)) {
+                    b.mark(head + dir, mark);
+                }
+            }
+        }
+        b.mark(tail, '.');
+    }
 
     set<Direction> allowedMoves;
 
-    if (allowedMove(battlefield, width, height, myHead.x, myHead.y+1)) {
-        allowedMoves.insert(Direction::down);
-    }
-    if (allowedMove(battlefield, width, height, myHead.x, myHead.y-1)) {
-        allowedMoves.insert(Direction::up);
-    }
-    if (allowedMove(battlefield, width, height, myHead.x+1, myHead.y)) {
-        allowedMoves.insert(Direction::right);
-    }
-    if (allowedMove(battlefield, width, height, myHead.x-1, myHead.y)) {
-        allowedMoves.insert(Direction::left);
-    }
-
-    for (auto& move : allowedMoves) {
-        switch (move) {
-            case Direction::down: cout << "down" << endl; break;
-            case Direction::up: cout << "up" << endl; break;
-            case Direction::left: cout << "left" << endl; break;
-            case Direction::right: cout << "right" << endl; break;
+    // Check allowed directions
+    for (auto& dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
+        if (b.allowedMove(myHead + dir)) {
+            allowedMoves.insert(dir);
         }
     }
 
@@ -108,10 +165,9 @@ Move_response battlesnake_move(
     bool headingDecided = false;
     // Direction to closest food
     {
-        int a = closestFood.x - myHead.x;
-        int b = closestFood.y - myHead.y;
+        Point p = closestFood - myHead;
 
-        if (abs(a) > abs(b) && (allowedMoves.count(Direction::right) || allowedMoves.count(Direction::left))) {
+        if (abs(p.x) > abs(p.y) && (allowedMoves.count(Direction::right) || allowedMoves.count(Direction::left))) {
             // Try to close in on x axis
             if (closestFood.x > myHead.x && allowedMoves.count(Direction::right)) {
                 heading = Direction::right;
@@ -140,12 +196,11 @@ Move_response battlesnake_move(
     // Print battlefield
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            cout << battlefield[x+y*width];
+            cout << b.Get(x, y);
         }
         cout << endl;
     }
     cout << you << " -------------------------------------------------------" << endl;
 
-    delete[] battlefield;
     return Move_response(heading, "optional taunt here!");
 }
