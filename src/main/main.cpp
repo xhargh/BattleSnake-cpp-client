@@ -1,3 +1,10 @@
+/**
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2017, Oscar Asterkrans
+ * All rights reserved.
+ */
+
 #include <pistache/http.h>
 #include <pistache/endpoint.h>
 #include <pistache/router.h>

@@ -1,8 +1,15 @@
+/**
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2017, Oscar Asterkrans
+ * All rights reserved.
+ */
 
 #pragma once
 #include <main/json.hpp>
 #include <vector>
 
+// Representation of a direction on board.
 enum class Direction {
     up,
     left,
@@ -30,6 +37,7 @@ inline std::ostream & operator<<(std::ostream &os, const Direction& d)
 }
 
 // Move response, with an optional taunt.
+// Note: Direction is relative the board, not the snake.
 class Move_response {
 public:
     explicit Move_response(const Direction direction_) : direction(direction_) {};
@@ -38,16 +46,18 @@ public:
     std::string taunt;
 };
 
-// Callback for start requests.
-nlohmann::json battlesnake_start(const std::string& game_id, const int width, const int height);
+// Used for positions on board, to make it easier to switch integer type.
+using Index = int;
 
+// Callback for start requests.
+nlohmann::json battlesnake_start(const std::string& game_id, const Index width, const Index height);
 
 struct Point {
     Point() {};
-    Point(const int x, const int y) : x(x), y(y) {};
+    Point(const Index x, const Index y) : x(x), y(y) {};
 
-    int x = 0;
-    int y = 0;
+    Index x = 0;
+    Index y = 0;
 };
 
 inline std::ostream & operator<<(std::ostream &os, const Point& p)
@@ -59,23 +69,21 @@ inline std::ostream & operator<<(std::ostream &os, const Point& p)
 using Points = std::vector<Point>;
 
 struct Snake {
-    std::string name;
-    std::string taunt;
-    std::string id;
-    int health_points = 0;
-    Points coords;
+    Points coords;         // Coordinates that is occupied with this snake.
+    std::string name;      // Name of snake.
+    std::string taunt;     // Taunt.
+    std::string id;        // UUID of snake.
+    int health_points = 0; // Health points.
 };
 
 using Snakes = std::vector<Snake>;
 
 // Callback for move requests.
-// 'you' is the index of your snake in the snakes array.
-// TODO: What if dead?
 Move_response battlesnake_move(
-        const std::string& game_id,
-        const int width,
-        const int height,
-        const Points& food,
-        const Snakes& snakes,
-        const Snakes& dead_snakes,
-        const size_t my_snake_index);
+        const std::string& game_id,   // UUID of snake.
+        const Index width,            // Board width.
+        const Index height,           // Board height.
+        const Points& food,           // Points where food may be found.
+        const Snakes& snakes,         // Snakes.
+        const Snakes& dead_snakes,    // Dead snakes. These can do no harm.
+        const size_t my_snake_index); // Index of my snake in the snakes array.

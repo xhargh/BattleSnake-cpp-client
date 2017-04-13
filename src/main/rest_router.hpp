@@ -1,3 +1,9 @@
+/**
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2017, Oscar Asterkrans
+ * All rights reserved.
+ */
 
 #pragma once
 

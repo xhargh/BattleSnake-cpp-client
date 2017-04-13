@@ -1,3 +1,10 @@
+/**
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2017, Oscar Asterkrans
+ * All rights reserved.
+ */
+
 
 // Used to enable debug printouts.
 const bool debug = false;
@@ -11,8 +18,8 @@ const bool print_move = true;
 #include <pistache/router.h>
 
     void from_json(const nlohmann::json& j, Point& p) {
-        p.x = j[0];
-        p.y = j[1];
+        p.x = j[0].get<Index>();
+        p.y = j[1].get<Index>();
     }
 
     void from_json(const nlohmann::json& j, Snake& s) {
@@ -56,8 +63,8 @@ Net::Rest::Router get_router() {
             nlohmann::json req = nlohmann::json::parse(request.body());
 
             auto game_id = req["game_id"].get<std::string>();
-            auto width = req["width"].get<int>();
-            auto height = req["height"].get<int>();
+            auto width = req["width"].get<Index>();
+            auto height = req["height"].get<Index>();
 
             // battlesnake_start() is implemented by the user.
             auto response_body = battlesnake_start(game_id, width, height);
@@ -103,8 +110,8 @@ Net::Rest::Router get_router() {
             // battlesnake_start() is implemented by the user.
             auto move = battlesnake_move(
                     req["game_id"].get<std::string>(),
-                    req["width"].get<int>(),
-                    req["height"].get<int>(),
+                    req["width"].get<Index>(),
+                    req["height"].get<Index>(),
                     req["food"].get<Points>(),
                     snakes,
                     req["dead_snakes"].get<Snakes>(),

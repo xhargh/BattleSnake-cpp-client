@@ -1,9 +1,14 @@
+/**
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2017, Oscar Asterkrans
+ * All rights reserved.
+ */
+#pragma once
 #include <api/battlesnake.hpp>
 #include <boost/graph/grid_graph.hpp>
 #include <boost/graph/filtered_graph.hpp>
 #include <array>
-
-#pragma once
 
 // NOTE: This board is just a prototype. You probably want to add stuff to both Square and Board.
 namespace board {
@@ -17,13 +22,13 @@ struct Square {
 
 
 // Represents a fully connected grid layout graph.
-using Full_grid = boost::grid_graph<2, int>;
+using Full_grid = boost::grid_graph<2, Index>;
 
-// Vertex descriptor. NOTE: Vertex of filtered graph have another type.
-using Vertex = boost::array<int, 2>; //boost::graph_traits<Full_grid>::vertex_descriptor;
+// Vertex descriptor representing a square on the game plan.
+using Vertex = boost::array<Index, 2>; //Same as boost::graph_traits<Full_grid>::vertex_descriptor;
 
-// Edge descriptor representing an edge in the graph. NOTE: Edges of filtered graph have another type.
-using Edge = boost::graph_traits<Full_grid>::edge_descriptor;
+// Edge descriptor representing a directed connection between two squares on the game plan.
+using Edge = std::pair<Vertex, Vertex>; // Same as boost::graph_traits<Full_grid>::edge_descriptor;
 
 // Convert a Point to a vertex descriptor.
 inline Vertex to_vertex(const Point& p) {
@@ -37,7 +42,7 @@ inline Point to_point(const Vertex& v) {
 
 class Board {
 public:
-    Board(const int width, const int height) :
+    Board(const Index width, const Index height) :
             width(width),
             height(height),
             full_grid_graph(create_full_grid_graph(width, height)) {
@@ -58,13 +63,13 @@ public:
     }
 private:
     // Create the full grid graph.
-    Full_grid create_full_grid_graph(const int width, const int height) {
-        boost::array<int, 2> lengths = { {width, height} };
+    Full_grid create_full_grid_graph(const Index width, const Index height) {
+        boost::array<Index, 2> lengths = { {width, height} };
         return Full_grid(lengths);
     }
 
-    const int width;
-    const int height;
+    const Index width;
+    const Index height;
     // This graph have one vertex for each square on board. Neighbouring vertices have edges connecting them. (One edge in each direction.)
     Full_grid full_grid_graph;
 
@@ -111,8 +116,8 @@ template <typename EdgeT, typename GraphT>
 Direction getDirection(EdgeT e, GraphT g) {
     const auto source = boost::source(e, g);
     const auto target = boost::target(e, g);
-    const int dx = target[0] - source[0];
-    const int dy = target[1] - source[1];
+    const int dx = static_cast<int>(target[0]) - source[0];
+    const int dy = static_cast<int>(target[1]) - source[1];
     assert((dx == 0 || dy == 0) && std::abs(dx + dy) == 1); // one step in either direction.
 
     if (dy == 1) {
