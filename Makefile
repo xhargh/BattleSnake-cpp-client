@@ -1,16 +1,27 @@
 
 .PHONY: all
-all:
+all: build
+
+.PHONY: build
+build:
 	cd build && \
 		cmake .. -DCMAKE_BUILD_TYPE=Debug && \
 		make
 
+.PHONY: build_opt
+build_opt:
+	cd build && \
+		cmake .. -DCMAKE_BUILD_TYPE=Optimize && \
+		make
+
 .PHONY: run_basic
-run_basic: all
+run_basic:
+	make
 	./build/basic_snake
 
 .PHONY: run_boost
-run_boost: all
+run_boost:
+	make
 	./build/boost_snake
 
 .PHONY: clean
