@@ -9,6 +9,7 @@ find_library(pistache REQUIRED)
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/boost
 	/home/acorn/installs/boost_1_63_0)
 
 ################ main ############################
