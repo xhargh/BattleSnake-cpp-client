@@ -56,3 +56,24 @@ set_target_properties(boost_snake PROPERTIES
 	CXX_STANDARD_REQUIRED ON
 	CXX_EXTENSIONS ON
 )
+
+################ c_snakes ############################
+
+file(GLOB SNAKE_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/c_snakes/*.c
+)
+
+
+ADD_EXECUTABLE(c_snakes
+	${SNAKE_SRCS}
+	src/c_api/cpp_to_c_snake.cpp
+	src/c_api/snake_c_utils.cpp
+)
+
+target_link_libraries(c_snakes mainlib)
+
+set_target_properties(c_snakes PROPERTIES
+	CXX_STANDARD 14
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS ON
+)
