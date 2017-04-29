@@ -179,7 +179,7 @@ struct queueNode
 
 // function to find the shortest path between
 // a given source cell to a destination cell.
-int BFS(const Battlefield &b, Point src, const Points &food)
+int BFS(const Battlefield &b, Point src, const Points &dests)
 {
     using namespace std;
 
@@ -210,7 +210,7 @@ int BFS(const Battlefield &b, Point src, const Points &food)
 
         // If we have reached the destination cell,
         // we are done
-        for (auto &f : food) {
+        for (auto &f : dests) {
             if (pt == f) {
                 delete[] visited;
                 return curr.dist;
@@ -247,6 +247,22 @@ int BFS(const Battlefield &b, Point src, const Points &food)
     delete[] visited;
     //return -1 if destination cannot be reached
     return INT_MAX;
+}
+
+bool bfsSearch(const Battlefield &b, const Point &myHead, const Points &dests, Direction &heading) {
+    bool headingDecided = false;
+    int minDist = INT_MAX;
+    for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
+        if (b.allowedMove(myHead + dir)) {
+            int dist = BFS(b, myHead+dir, dests);
+            if (dist < minDist) {
+                minDist = dist;
+                heading = dir;
+                headingDecided = true;
+            }
+        }
+    }
+    return headingDecided;
 }
 
 // Callback that will be called on move requests.
@@ -310,43 +326,65 @@ Move_response battlesnake_move(
         }
     }
 
-    // printBattleField(b, width, height);
-
-    set<Direction> allowedMoves;
+     set<Direction> allowedMoves;
 
     Direction heading = Direction::down;
     bool headingDecided = false;
 
     // Check allowed directions
-    int minDist = INT_MAX;
     for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
         if (b.allowedMove(myHead + dir)) {
             allowedMoves.insert(dir);
-
-            int dist = BFS(b, myHead+dir, food);
-            if (dist < minDist) {
-                minDist = dist;
-                heading = dir;
-                headingDecided = true;
-            }
-            switch (dir) {
-                case Direction::up:
-                    cout << "Up: " << dist << endl;
-                    break;
-                case Direction::down:
-                    cout << "Down" << dist << endl;
-                    break;
-                case Direction::left:
-                    cout << "Left" << dist << endl;
-                    break;
-                case Direction::right:
-                    cout << "Right" << dist << endl;
-                    break;
-            }
         }
     }
 
+    // Look for closest reachable food
+    headingDecided = bfsSearch(b, myHead, food, heading);
+
+    // If no reachable food, go for head of shorter snake (possible way out)
     if (!headingDecided) {
+        taunt = taunt + " - Head Hunter!";
+        Points heads;
+        for (int i = 0; i < snakes.size(); i++) {
+            auto &snake = snakes[i];
+            Point head = snake.coords[0];
+
+            if (i != you) {
+                for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
+                    Point p = head + dir;
+                    if (b.allowedMove(p)) {
+                        heads.push_back(head + Direction::down);
+                    }
+                }
+            }
+        }
+        headingDecided = bfsSearch(b, myHead, heads, heading);
+    }
+
+    // If no head of shorter snake, go for any tail (possible way out)
+    if (!headingDecided) {
+        taunt = taunt + " - Tail Gater!";
+        Points tails;
+        for (int i = 0; i < snakes.size(); i++) {
+            auto &snake = snakes[i];
+            Point tail = snake.coords[snake.coords.size()-1];
+
+            for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
+                if (b.allowedMove(tail)) {
+                    tails.push_back(tail);
+                }
+            }
+        }
+        headingDecided = bfsSearch(b, myHead, tails, heading);
+    }
+
+    if (!headingDecided) {
+        // TODO: Go for greatest area...
+    }
+
+    if (!headingDecided) {
+        taunt = taunt + "???";
+
         // Direction to closest food
         Point p = closestFood - myHead;
 
@@ -359,8 +397,6 @@ Move_response battlesnake_move(
         left = left && (p.x < 0);
         up = up && (p.y < 0);
         down = down && (p.y > 0);
-
-        taunt = taunt + "...";
 
         if (right) {
             heading = Direction::right;
