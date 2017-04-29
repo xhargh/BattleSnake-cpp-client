@@ -179,7 +179,7 @@ struct queueNode
 
 // function to find the shortest path between
 // a given source cell to a destination cell.
-int BFS(const Battlefield &b, Point src, Point dest)
+int BFS(const Battlefield &b, Point src, const Points &food)
 {
     using namespace std;
 
@@ -210,15 +210,11 @@ int BFS(const Battlefield &b, Point src, Point dest)
 
         // If we have reached the destination cell,
         // we are done
-        if (pt.x == dest.x && pt.y == dest.y) {
-            /*for (int y = 0; y < b.height; y++) {
-                for (int x = 0; x < b.width; x++) {
-                    std::cout << visited[x + y * b.width] ? "*":".";
-                }
-                std::cout << std::endl;
-            }*/
-            delete[] visited;
-            return curr.dist;
+        for (auto &f : food) {
+            if (pt == f) {
+                delete[] visited;
+                return curr.dist;
+            }
         }
 
         // Otherwise dequeue the front cell in the queue
@@ -318,7 +314,6 @@ Move_response battlesnake_move(
 
     set<Direction> allowedMoves;
 
-#if 1
     Direction heading = Direction::down;
     bool headingDecided = false;
 
@@ -327,78 +322,64 @@ Move_response battlesnake_move(
     for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
         if (b.allowedMove(myHead + dir)) {
             allowedMoves.insert(dir);
-        }
-        int dist = BFS(b, myHead+dir, closestFood);
-        if (dist < minDist) {
-            minDist = dist;
-            heading = dir;
-            headingDecided = true;
-        }
-        switch (dir) {
-            case Direction::up:
-                cout << "Up: " << dist << endl;
-                break;
-            case Direction::down:
-                cout << "Down" << dist << endl;
-                break;
-            case Direction::left:
-                cout << "Left" << dist << endl;
-                break;
-            case Direction::right:
-                cout << "Right" << dist << endl;
-                break;
-        }
 
+            int dist = BFS(b, myHead+dir, food);
+            if (dist < minDist) {
+                minDist = dist;
+                heading = dir;
+                headingDecided = true;
+            }
+            switch (dir) {
+                case Direction::up:
+                    cout << "Up: " << dist << endl;
+                    break;
+                case Direction::down:
+                    cout << "Down" << dist << endl;
+                    break;
+                case Direction::left:
+                    cout << "Left" << dist << endl;
+                    break;
+                case Direction::right:
+                    cout << "Right" << dist << endl;
+                    break;
+            }
+        }
     }
-
-#else
-    Direction heading = Direction::down;
-    bool headingDecided = false;
-
-    // Direction to closest food
-
-
-    bool right = allowedMoves.count(Direction::right);
-    bool left = allowedMoves.count(Direction::left);
-    bool up = allowedMoves.count(Direction::up);
-    bool down = allowedMoves.count(Direction::down);
-    // cout << "apa: " << (apa ? "true" : "false") << endl;
-    cout << "p: " << p << endl;
-    cout << "myHead: " << myHead << endl;
-    // cout << "nextPoint: " << paths[myHead.x + myHead.y*b.width] << endl;
-    cout << "closestFood: " << closestFood << endl;
-
-    cout << "A: " << (right?"right, ":"") << (left?"left, ":"") << (up?"up, ":"") << (down?"down, ":"") << endl;
-
-    //if (nextPoint.x == myHead.x && nextPoint.y == myHead.y) {
-    //    taunt = "Oh no! ";
-    //}
-
-    right = right && (p.x > 0);
-    left = left && (p.x < 0);
-    up = up && (p.y < 0);
-    down = down && (p.y > 0);
-
-    cout << "B: " << (right?"right, ":"") << (left?"left, ":"") << (up?"up, ":"") << (down?"down, ":"") << endl;
-
-    if (right) {
-        heading = Direction::right;
-        headingDecided = true;
-    } else if (left) {
-        heading = Direction::left;
-        headingDecided = true;
-    } else if (up) {
-        heading = Direction::up;
-        headingDecided = true;
-    } else if (down) {
-        heading = Direction::down;
-        headingDecided = true;
-    }
-#endif
 
     if (!headingDecided) {
-        cout << "undecided" << endl;
-        taunt = taunt + " - Oh no!";
+        // Direction to closest food
+        Point p = closestFood - myHead;
+
+        bool right = allowedMoves.count(Direction::right);
+        bool left = allowedMoves.count(Direction::left);
+        bool up = allowedMoves.count(Direction::up);
+        bool down = allowedMoves.count(Direction::down);
+
+        right = right && (p.x > 0);
+        left = left && (p.x < 0);
+        up = up && (p.y < 0);
+        down = down && (p.y > 0);
+
+        taunt = taunt + "...";
+
+        if (right) {
+            heading = Direction::right;
+            headingDecided = true;
+        } else if (left) {
+            heading = Direction::left;
+            headingDecided = true;
+        } else if (up) {
+            heading = Direction::up;
+            headingDecided = true;
+        } else if (down) {
+            heading = Direction::down;
+            headingDecided = true;
+        }
+    }
+
+    if (!headingDecided) {
+        // cout << "undecided" << endl;
+        taunt = "Oh no! - " + taunt;
         heading = *allowedMoves.begin();
     }
 
@@ -418,7 +399,7 @@ Move_response battlesnake_move(
     }
 
     // printBattleField(b, width, height);
-    cout << you << " " << taunt << " -------------------------------------------------------" << endl;
+    // cout << you << " " << taunt << " -------------------------------------------------------" << endl;
 
     return Move_response(heading, taunt);
 }
