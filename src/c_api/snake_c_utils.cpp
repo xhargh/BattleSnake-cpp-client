@@ -110,7 +110,7 @@ void SnakeBattlefieldUpdate(Battlefield * const pBattlefield, const MoveInput * 
   // Draw alive snakes (lower case letters)
   int c = 'a';
   for (int s = 0; s < pMoveInput->numSnakes; s++) {
-    Snake &snake = pMoveInput->snakesArr[s];
+    SnakeT &snake = pMoveInput->snakesArr[s];
     std::cout << "snake: " << snake.id << " " << snake.name << std::endl;
     //for (auto& pt : snake.coords) {
     for (int p = 0; p < snake.numCoords; p++) {

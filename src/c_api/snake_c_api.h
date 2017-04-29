@@ -1,12 +1,12 @@
-#ifndef SNAKE_SOCKET
-#define SNAKE_SOCKET 1
+#ifndef SNAKE_C_API
+#define SNAKE_C_API 1
 
 #define SNAKE_STRLEN 80
 
 #define DEFAULT_PORT  "8080"
 #define ARRSZ(x) (sizeof(x)/sizeof(x[0]))
-#define MIN(x,y) ((x) < (y)) ? (x) : (y)
-#define MAX(x,y) ((x) > (y)) ? (x) : (y)
+#define MIN(x,y) (((x) < (y)) ? (x) : (y))
+#define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,7 +68,7 @@ typedef void(*SnakeStartFn)(
   StartOutputT * const pStartOutput
 );
 
-// Snake directions
+// SnakeT directions
 typedef enum {
   DIR_UP = 0,
   DIR_LEFT = 1,
@@ -90,14 +90,14 @@ typedef struct SnakeTag {
   int       healthPercent; // Percentage health
   Coords   *coordsArr; //< Array of coordinates in x,y
   int       numCoords; //< Number of coordinates
-} Snake;
+} SnakeT;
 
 // Input you get about how the current snake game looks.
 typedef struct MoveInputTag {
   int         width; // width of the board
   int         height; // height of the board
   int         yourSnakeIdx; // The index of your snake in snakesArr
-  Snake      *snakesArr; // Array of snakes, including yours.
+  SnakeT     *snakesArr; // Array of snakes, including yours.
   int         numSnakes; // Number of snakes in snakesArr
   Coords     *foodArr; // Array of available food coordinates
   int         numFood; // Number of food(s??)

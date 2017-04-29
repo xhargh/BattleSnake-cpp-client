@@ -88,7 +88,7 @@ endif (LINUX)
 ADD_EXECUTABLE(c_snakes
 	${SNAKE_SRCS}
 	${NON_LINUX_SRCS}
-	src/c_api/cpp_to_c_snake.cpp
+	src/c_api/snake_cpp_to_c.cpp
 	src/c_api/snake_c_utils.cpp
 )
 
