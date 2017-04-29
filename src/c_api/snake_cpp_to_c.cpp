@@ -68,6 +68,8 @@ Move_response battlesnake_move(
         const Snakes& dead_snakes,
         const size_t my_snake_index) {
 
+	int chosenDir = -2;
+
     // Time limit to make a move.
     //std::chrono::steady_clock::time_point const timeout=
     //    std::chrono::steady_clock::now()+std::chrono::milliseconds(2000);
@@ -75,7 +77,7 @@ Move_response battlesnake_move(
 	MoveOutput moveOutput;
 
 	moveInput.foodArr = (Coords *)calloc(food.size(), sizeof(Coords));
-	for (int f = 0; f < food.size(); f++){
+	for (size_t f = 0; f < food.size(); f++){
 		moveInput.foodArr[f].x =food[f].x;
 		moveInput.foodArr[f].y =food[f].y;
 	}
@@ -85,7 +87,7 @@ Move_response battlesnake_move(
 	moveInput.numSnakes = snakes.size();
 	moveInput.snakesArr = (SnakeT *)calloc(snakes.size(), sizeof(SnakeT));
 
-	for (int s = 0; s < snakes.size(); s++){
+	for (size_t s = 0; s < snakes.size(); s++){
 		const Snake &snake = snakes[s];
 		SnakeT &sout = moveInput.snakesArr[s];
 		sout.healthPercent = snake.health_points;
@@ -94,6 +96,11 @@ Move_response battlesnake_move(
 		strncpy(sout.taunt, snake.taunt.c_str(), MIN(snake.taunt.length(), SNAKE_STRLEN));
 		sout.coordsArr = (Coords *)calloc(snake.coords.size(), sizeof(Coords));
 		sout.numCoords = snake.coords.size();
+		for (int c = 0; c < sout.numCoords; c++){
+			auto p = snake.coords[c];
+			sout.coordsArr[c].x = p.x;
+			sout.coordsArr[c].y = p.y;
+		}
 	}
 
 
@@ -101,29 +108,22 @@ Move_response battlesnake_move(
     	sctc_ps->Move(sctc_pu, game_id.c_str(), &moveInput, &moveOutput);
     }
 
-	Direction::dir
+	std::string taunt;
+	memcpy( &taunt.  strlen(moveOutput.taunt) > 1) ?
+	switch(moveOutput.dir){
+	case DIR_UP: {
 
+	}break;
+	case DIR_LEFT: {
 
-    Snake my_snake = snakes[my_snake_index];
-    Point my_snake_head = my_snake.coords[0];
+	}break;
+	case DIR_DOWN: {
 
-    if (food.empty()) {
-        return Move_response(Direction::down, "No food! Where should I go???");
-    }
+	}break;
+	default: { // (DIR_UP):
 
-    Point firstFood = food[0];
-
-    std::cout << "my pos: " << my_snake_head << "food: " << firstFood << std::endl;
-
-
-    if (firstFood.y > my_snake_head.y) {
-        return Move_response(Direction::down, "Watch out! Going down!!!");
-    } else if (firstFood.y < my_snake_head.y) {
-        return Move_response(Direction::up, "Going up up up!!!");
-    } else if (firstFood.x < my_snake_head.x) {
-        return Move_response(Direction::left, "Left we go!!!");
-    } else {
-        return Move_response(Direction::right, "Food!!! Yumme!");
-    }
+	}break;
+	}
+    return Move_response(Direction::down, "No food! Where should I go???");
 }
 
