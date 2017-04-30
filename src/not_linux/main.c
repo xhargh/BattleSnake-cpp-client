@@ -43,11 +43,11 @@ int main(int argv, char **argc)
   }
 
   printf(
-		  "Note that the sockets used in this version are \"dumb\" and cannot \r\n"
+		  "\r\nNote that the sockets used in this version are \"dumb\" and cannot \r\n"
 		  "handle more than one connection at a time.  As a result, if you want \r\n"
 		  "to run multiple snakes, you must run each of them on an individual \r\n"
 		  "port in an individual process.\r\n"
-		  "Example: \r\n\t./c_snakes 8080 1\r\n\t./c_snakes 8081 2");
+		  "Example: \r\n\t./c_snakes 8080 1 &\r\n\t./c_snakes 8081 2\r\n\r\n");
 
   // This is a blocking call.  If you want multiple snakes, run multiple threads!
   printf("SnakeStart() listening socket %s...\r\n", port);
