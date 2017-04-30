@@ -68,11 +68,6 @@ Move_response battlesnake_move(
         const Snakes& dead_snakes,
         const size_t my_snake_index) {
 
-	int chosenDir = -2;
-
-    // Time limit to make a move.
-    //std::chrono::steady_clock::time_point const timeout=
-    //    std::chrono::steady_clock::now()+std::chrono::milliseconds(2000);
 	MoveInput moveInput;
 	MoveOutput moveOutput;
 
@@ -81,6 +76,7 @@ Move_response battlesnake_move(
 		moveInput.foodArr[f].x =food[f].x;
 		moveInput.foodArr[f].y =food[f].y;
 	}
+
 	moveInput.numFood = food.size();
 	moveInput.height = height;
 	moveInput.width = width;
@@ -103,27 +99,27 @@ Move_response battlesnake_move(
 		}
 	}
 
-
 	if (sctc_ps){
     	sctc_ps->Move(sctc_pu, game_id.c_str(), &moveInput, &moveOutput);
     }
 
-	std::string taunt;
-	memcpy( &taunt.  strlen(moveOutput.taunt) > 1) ?
+	auto d = Direction::up;
 	switch(moveOutput.dir){
-	case DIR_UP: {
-
-	}break;
-	case DIR_LEFT: {
-
-	}break;
-	case DIR_DOWN: {
-
-	}break;
-	default: { // (DIR_UP):
-
-	}break;
+	case DIR_UP: d = Direction::up; break;
+	case DIR_LEFT: d = Direction::left; break;
+	case DIR_DOWN: d = Direction::down; break;
+	case DIR_RIGHT: default: d = Direction::right; break;
 	}
-    return Move_response(Direction::down, "No food! Where should I go???");
+    auto rval = Move_response( d, moveOutput.taunt );
+
+    for (int s = 0; s < moveInput.numSnakes; s++){
+    	SnakeT *ps = &moveInput.snakesArr[s];
+    	free(ps->coordsArr);
+    	free(ps);
+    }
+
+    free(moveInput.foodArr);
+
+    return rval;
 }
 
