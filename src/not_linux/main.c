@@ -14,8 +14,15 @@
 int main(int argv, char **argc)
 {
   const SnakeCallbacks *pCallbacks = &stupid_snake;
-  if (argv > 1) {
-    char *szNum = argc[1];
+
+
+  const char * port = DEFAULT_PORT;
+  if ((argv > 1) && (strlen(argc[1]) > 0)){
+    port = argc[1];
+  }
+
+  if (argv > 2) {
+    char *szNum = argc[2];
     switch (szNum[0]) {
     case '1': pCallbacks = &smart_snake;
       break;
@@ -24,11 +31,6 @@ int main(int argv, char **argc)
     default: pCallbacks = &stupid_snake;
       break;
     }
-  }
-
-  const char * port = DEFAULT_PORT;
-  if ((argv > 2) && (strlen(argc[2]) > 0)){
-    port = argc[2];
   }
 
   // This is a blocking call.  If you want multiple snakes, run multiple threads!
