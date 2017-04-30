@@ -46,7 +46,7 @@ static void snake_move(
   }
   else {
 
-    Snake * const pMe = &pMoveInput->snakesArr[pMoveInput->yourSnakeIdx];
+    SnakeT * const pMe = &pMoveInput->snakesArr[pMoveInput->yourSnakeIdx];
     const Coords head = pMe->coordsArr[0];
     const Coords food0 = pMoveInput->foodArr[0];
 

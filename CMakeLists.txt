@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.5)
-PROJECT(BattleSnakeCpp CXX)
+PROJECT(BattleSnakeCpp)
 set (CMAKE_ECLIPSE_VERSION "4.6")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")

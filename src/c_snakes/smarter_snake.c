@@ -54,7 +54,7 @@ static void snake_move(
   const int width = pMoveInput->width;
   //const int height = pMoveInput->height;
 
-  Snake * const pMe = &pMoveInput->snakesArr[pMoveInput->yourSnakeIdx];
+  SnakeT * const pMe = &pMoveInput->snakesArr[pMoveInput->yourSnakeIdx];
   const Coords myHead = pMe->coordsArr[0];
 
 

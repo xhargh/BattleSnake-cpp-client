@@ -12,9 +12,11 @@
 #include "c_api/snake_c_api.h"
 #include "c_api/snake_c_utils.h"
 
-//#include "c_snakes/stupid_snake.h"
-//#include "c_snakes/smarter_snake.h"
-//#include "c_snakes/smart_snake.h"
+#include "c_snakes/stupid_snake.h"
+#include "c_snakes/smarter_snake.h"
+#include "c_snakes/smart_snake.h"
+
+char * main_get_argv2();
 
 static const SnakeCallbacks * sctc_ps = NULL;
 static void * sctc_pu = NULL;
@@ -31,6 +33,22 @@ nlohmann::json battlesnake_start(const std::string& game_id, const Index width, 
 
     std::cout << "*** New game started *** width=" << width << ", height=" << height <<
             ", id=" << game_id << ".\n";
+
+    char *argv2 = main_get_argv2();
+    switch (argv2[0]){
+    	case '1': {
+    		std::cout << "Set stupid snake as your main competitor." << std::endl;
+    		snake_c_callbacks_set( &stupid_snake, NULL );
+    	} break;
+    	case '2': {
+    		std::cout << "Set smart snake as your main competitor." << std::endl;
+    		snake_c_callbacks_set( &smart_snake, NULL );
+    	} break;
+    	default: {
+    		std::cout << "Set smarter snake as your main competitor." << std::endl;
+    		snake_c_callbacks_set( &smarter_snake, NULL );
+    	} break;
+    }
 
     StartOutputT startOutput = {
     	"red",
