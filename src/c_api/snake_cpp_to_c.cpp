@@ -15,11 +15,13 @@
 #include "c_snakes/stupid_snake.h"
 #include "c_snakes/smarter_snake.h"
 #include "c_snakes/smart_snake.h"
+#include <mutex>
 
 char * main_get_argv2();
 
 static const SnakeCallbacks * sctc_ps = NULL;
 static void * sctc_pu = NULL;
+static std::mutex mutex;
 
 void snake_c_callbacks_set(const SnakeCallbacks * const pSnake, void *pUserData){
 	sctc_ps = pSnake;
@@ -35,19 +37,25 @@ nlohmann::json battlesnake_start(const std::string& game_id, const Index width, 
             ", id=" << game_id << ".\n";
 
     char *argv2 = main_get_argv2();
-    switch (argv2[0]){
-    	case '1': {
-    		std::cout << "Set stupid snake as your main competitor." << std::endl;
-    		snake_c_callbacks_set( &stupid_snake, NULL );
-    	} break;
-    	case '2': {
-    		std::cout << "Set smart snake as your main competitor." << std::endl;
-    		snake_c_callbacks_set( &smart_snake, NULL );
-    	} break;
-    	default: {
-    		std::cout << "Set smarter snake as your main competitor." << std::endl;
-    		snake_c_callbacks_set( &smarter_snake, NULL );
-    	} break;
+    if (argv2){
+		switch (argv2[0]){
+			case '1': {
+				std::cout << "Set stupid snake as your main competitor." << std::endl;
+				snake_c_callbacks_set( &stupid_snake, NULL );
+			} break;
+			case '2': {
+				std::cout << "Set smart snake as your main competitor." << std::endl;
+				snake_c_callbacks_set( &smart_snake, NULL );
+			} break;
+			default: {
+				std::cout << "Set smarter snake as your main competitor." << std::endl;
+				snake_c_callbacks_set( &smarter_snake, NULL );
+			} break;
+		}
+    }
+	else {
+		snake_c_callbacks_set( &smarter_snake, NULL );
+		std::cout << "Set stupid snake as your main competitor." << std::endl;
     }
 
     StartOutputT startOutput = {
@@ -60,7 +68,9 @@ nlohmann::json battlesnake_start(const std::string& game_id, const Index width, 
     };
 
     if (sctc_ps){
+    	mutex.lock();
     	sctc_ps->Start(sctc_pu, game_id.c_str(), width, height, &startOutput);
+    	mutex.unlock();
     }
 
     return {
@@ -89,17 +99,19 @@ Move_response battlesnake_move(
 	MoveInput moveInput;
 	MoveOutput moveOutput;
 
-	moveInput.foodArr = (Coords *)calloc(food.size(), sizeof(Coords));
+	moveInput.numFood = food.size();
+	moveInput.foodArr = (Coords *)calloc(moveInput.numFood, sizeof(Coords));
 	for (size_t f = 0; f < food.size(); f++){
 		moveInput.foodArr[f].x =food[f].x;
 		moveInput.foodArr[f].y =food[f].y;
 	}
 
-	moveInput.numFood = food.size();
+
 	moveInput.height = height;
 	moveInput.width = width;
 	moveInput.numSnakes = snakes.size();
-	moveInput.snakesArr = (SnakeT *)calloc(snakes.size(), sizeof(SnakeT));
+	moveInput.snakesArr = (SnakeT *)calloc(moveInput.numSnakes, sizeof(SnakeT));
+	moveInput.yourSnakeIdx = my_snake_index;
 
 	for (size_t s = 0; s < snakes.size(); s++){
 		const Snake &snake = snakes[s];
@@ -108,8 +120,8 @@ Move_response battlesnake_move(
 		strncpy(sout.id, snake.id.c_str(), MIN(snake.id.length(), SNAKE_STRLEN));
 		strncpy(sout.name, snake.name.c_str(), MIN(snake.name.length(), SNAKE_STRLEN));
 		strncpy(sout.taunt, snake.taunt.c_str(), MIN(snake.taunt.length(), SNAKE_STRLEN));
-		sout.coordsArr = (Coords *)calloc(snake.coords.size(), sizeof(Coords));
 		sout.numCoords = snake.coords.size();
+		sout.coordsArr = (Coords *)calloc(sout.numCoords, sizeof(Coords));
 		for (int c = 0; c < sout.numCoords; c++){
 			auto p = snake.coords[c];
 			sout.coordsArr[c].x = p.x;
@@ -118,7 +130,9 @@ Move_response battlesnake_move(
 	}
 
 	if (sctc_ps){
+    	mutex.lock();
     	sctc_ps->Move(sctc_pu, game_id.c_str(), &moveInput, &moveOutput);
+    	mutex.unlock();
     }
 
 	auto d = Direction::up;
@@ -133,9 +147,9 @@ Move_response battlesnake_move(
     for (int s = 0; s < moveInput.numSnakes; s++){
     	SnakeT *ps = &moveInput.snakesArr[s];
     	free(ps->coordsArr);
-    	free(ps);
     }
 
+	free(moveInput.snakesArr);
     free(moveInput.foodArr);
 
     return rval;

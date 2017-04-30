@@ -11,11 +11,14 @@ const bool debug = false;
 const bool print_move = true;
 
 
+
 #include "rest_router.hpp"
 #include "json.hpp"
 #include <api/battlesnake.hpp>
 #include <pistache/mime.h>
 #include <pistache/router.h>
+#include <mutex>
+
 
     void from_json(const nlohmann::json& j, Point& p) {
         p.x = j[0].get<Index>();

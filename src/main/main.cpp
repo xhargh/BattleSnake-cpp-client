@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
     uint16_t port = 8080;
 	if (argc > 1){
 		std::string szPort = argv[1];
+		std::cout << "Got port " << szPort << std::endl;
 		port = std::stoi(szPort, nullptr, 10);
 	}
 
