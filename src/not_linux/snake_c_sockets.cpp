@@ -4,8 +4,8 @@
 */
 
 
-#include "snake_c_api.h"
-#include "snake_c_utils.h"
+#include "c_api/snake_c_api.h"
+#include "c_api/snake_c_utils.h"
 #include <thread>
 #include <mutex>
 
@@ -254,7 +254,7 @@ static void jsonArrToCArr(const nlohmann::json &jarr, Coords * &pArr, int &numCo
 }
 
 // ////////////////////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& jsnake, Snake& s) {
+void from_json(const nlohmann::json& jsnake, SnakeT& s) {
 
   if (jsnake["id"].size() > 0) {
     const std::string id = jsnake["id"].get<std::string>();
@@ -309,13 +309,13 @@ std::string SnakeMoveListener::parseMove(const char * const cbuf) {
 #endif
 
       moveInput.numSnakes = snakes.size();
-      moveInput.snakesArr = (Snake *)calloc(moveInput.numSnakes, sizeof(Snake));
+      moveInput.snakesArr = (SnakeT *)calloc(moveInput.numSnakes, sizeof(SnakeT));
 
       // Convert from json to struct.
       int snakeIdx = 0;
       for (const nlohmann::json jsnake : snakes) {
-        Snake &destSnake = moveInput.snakesArr[snakeIdx];
-        destSnake = jsnake.get<Snake>();
+        SnakeT &destSnake = moveInput.snakesArr[snakeIdx];
+        destSnake = jsnake.get<SnakeT>();
         if (destSnake.id == you_uuid) {
           moveInput.yourSnakeIdx = snakeIdx;
         }
@@ -348,7 +348,7 @@ std::string SnakeMoveListener::parseMove(const char * const cbuf) {
 
         // Free allocated snake coordinates.
         for (int snakeIdx = 0; snakeIdx < moveInput.numSnakes; snakeIdx++) {
-          Snake &snake = moveInput.snakesArr[snakeIdx];
+          SnakeT &snake = moveInput.snakesArr[snakeIdx];
           if (snake.coordsArr) {
             free(snake.coordsArr);
           }
@@ -457,7 +457,6 @@ void SnakeMoveListener::Moving(MoveListenerThreadData &sd) {
 
 // //////////////////////////////////////////////////////////////////////////
 bool SnakeMoveListener::nextMove() {
-  int iResult = 0;
   bool rval = true;
 
   // Accept a client socket
