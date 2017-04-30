@@ -44,11 +44,42 @@ std::vector<std::string> name = {
         "Constrictadore",
         "Snake Rattlenroll",
         "Orminge",
-        "Anja Konda"
+        "Anja Konda",
         "Ormega",
         "Serpentina",
         "Snokrates",
-        "Ouroboros"
+        "Ouroboros",
+        "Nibble",
+        "Masken Mimmi",
+        "Dagge Daggmask",
+        "Severus Snake",
+        "Lindorm",
+        "Sir Pants"
+};
+
+std::vector<std::string> headType = {
+    "bendr",
+    "dead",
+    "fang",
+    "pixel",
+    "regular",
+    "safe",
+    "sand-worm",
+    "shades",
+    "smile",
+    "tongue"
+};
+
+std::vector<std::string> tailType = {
+    "small-rattle",
+    "skinny-tail",
+    "round-bum",
+    "regular",
+    "pixel",
+    "freckled",
+    "fat-rattle",
+    "curled",
+    "block-bum"
 };
 
 // Callback that will be called when a new game starts (on start request).
@@ -64,8 +95,8 @@ nlohmann::json battlesnake_start(const std::string &game_id, const int width, co
             //{"head_url", "http://placecage.com/c/100/100"},
             {"name",            name[rand() % name.size()]},
             {"taunt",           "OH GOD NOT THE BEES"},
-            {"head_type",       "pixel"},
-            {"tail_type",       "pixel"}
+            {"head_type",       headType[rand() % headType.size()]},
+            {"tail_type",       tailType[rand() % tailType.size()]}
     };
 }
 
