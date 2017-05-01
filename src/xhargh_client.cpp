@@ -87,11 +87,14 @@ std::vector<std::string> tailType = {
 nlohmann::json battlesnake_start(const std::string &game_id, const int width, const int height) {
     srand(seed++);
     std::ostringstream color;
-    color << "#" << std::hex << (rand() & 0xffffff);
+    int r = rand() % 128 + 128;
+    int g = rand() % 128 + 128;
+    int b = rand() % 128 + 128;
+    color << "#" << std::hex << r << g << b;
     std::cout << "color : " << color.str() << std::endl;
     return {
             {"color",           color.str()},
-            {"secondary_color", "#00FF00"},
+            {"secondary_color", "#ffffff"},
             //{"head_url", "http://placecage.com/c/100/100"},
             {"name",            name[rand() % name.size()]},
             {"taunt",           "OH GOD NOT THE BEES"},
@@ -175,6 +178,7 @@ Point operator+(const Point p, const Direction &dir) {
         case Direction::right:
             return Point(p.x + 1, p.y);
     }
+    return p;
 }
 
 Point operator-(const Point p1, const Point p2) {
@@ -343,7 +347,7 @@ Move_response battlesnake_move(
     b.mark(closestFood, '#');
 
     // 'iterate' one step by marking all possible next steps
-    for (int i = 0; i < snakes.size(); i++) {
+    for (size_t i = 0; i < snakes.size(); i++) {
         auto &snake = snakes[i];
         Point head = snake.coords[0];
 
@@ -376,7 +380,7 @@ Move_response battlesnake_move(
     if (!headingDecided) {
         taunt = taunt + " - Head Hunter!";
         Points heads;
-        for (int i = 0; i < snakes.size(); i++) {
+        for (size_t i = 0; i < snakes.size(); i++) {
             auto &snake = snakes[i];
             Point head = snake.coords[0];
 
@@ -396,14 +400,12 @@ Move_response battlesnake_move(
     if (!headingDecided) {
         taunt = taunt + " - Tail Gater!";
         Points tails;
-        for (int i = 0; i < snakes.size(); i++) {
+        for (size_t i = 0; i < snakes.size(); i++) {
             auto &snake = snakes[i];
             Point tail = snake.coords[snake.coords.size()-1];
 
-            for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
-                if (b.allowedMove(tail)) {
-                    tails.push_back(tail);
-                }
+            if (b.allowedMove(tail)) {
+                tails.push_back(tail);
             }
         }
         headingDecided = bfsSearch(b, myHead, tails, heading);
