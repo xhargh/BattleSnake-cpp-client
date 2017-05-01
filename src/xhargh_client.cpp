@@ -3,6 +3,7 @@
 #include <queue>
 #include <set>
 #include <climits>
+//#include <chrono>
 
 static int seed = time(NULL);
 
@@ -49,13 +50,29 @@ std::vector<std::string> name = {
         "Serpentina",
         "Snokrates",
         "Ouroboros",
-        "Nibble",
+        "Nibbles",
         "Masken Mimmi",
         "Dagge Daggmask",
         "Severus Snake",
         "Lindorm",
         "Sir Pants",
-        "Slingersvans"
+        "Slingersvans",
+        "Eelrond",
+        "Earthworm Jim",
+        "Orme",
+        "Wurm",
+        "Wormley",
+        "Medusa",
+        "Monty",
+        "William Snakespeare",
+        "Asmodeus Poisonteeth",
+        "Mr. Crowley",
+        "Nag",
+        "Nagaina",
+        "Salmissra",
+        "Sammy the Snake",
+        "Slither",
+        "Fang"
 };
 
 std::vector<std::string> headType = {
@@ -99,7 +116,7 @@ nlohmann::json battlesnake_start(const std::string &game_id, const int width, co
             {"secondary_color", "#ffffff"},
             //{"head_url", "http://placecage.com/c/100/100"},
             {"name",            n},
-            {"taunt",           "OH GOD NOT THE BEES"},
+            {"taunt",           "..."},
             {"head_type",       headType[rand() % headType.size()]},
             {"tail_type",       tailType[rand() % tailType.size()]}
     };
@@ -351,6 +368,8 @@ Move_response battlesnake_move(
         const Snakes &dead_snakes,
         const size_t you) {
     using namespace std;
+    //using namespace std::chrono;
+    //milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
     Battlefield b(width, height);
     string taunt;
 
@@ -406,7 +425,7 @@ Move_response battlesnake_move(
     map<Direction, int> bfsResults;
     map<Direction, size_t> areas;
 
-    // Precalculate vfs distance and areas
+    // Precalculate the bfs and areas
     for (auto &dir : allowedMoves) {
         bfsResults[dir] = BFS(b, myHead+dir, food);
         areas[dir] = emptySpace(b, myHead+dir);
@@ -429,6 +448,7 @@ Move_response battlesnake_move(
         if (headingDecided && areas[heading] < snakes[you].coords.size() + 1) {
             allowedMoves.erase(heading);
             headingDecided = false;
+            taunt = "";
         } else if (!headingDecided) {
             // no direct paths to food, go to greatest area
             size_t greatestArea = 0;
@@ -439,37 +459,32 @@ Move_response battlesnake_move(
                     greatestArea = area;
                 }
             }
+            taunt = "?";
             headingDecided = true;
-
+        } else {
+            taunt = "!";
         }
     }
 
-
-/*
-    if (!headingDecided) {
-        // cout << "undecided" << endl;
-        taunt = "Oh no! - " + taunt;
-        heading = *allowedMoves.begin();
-    }
-*/
     switch (heading) {
         case Direction::up:
-            taunt += "Up";
+            taunt = "Up" + taunt;
             break;
         case Direction::down:
-            taunt += "Down";
+            taunt = "Down" + taunt;
             break;
         case Direction::left:
-            taunt += "Left";
+            taunt = "Left" + taunt;
             break;
         case Direction::right:
-            taunt += "Right";
+            taunt = "Right" + taunt;
             break;
     }
 
-    // printBattleField(b, width, height);
-    // cout << you << " " << taunt << " -------------------------------------------------------" << endl;
+    //milliseconds ms2 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
+    //auto d = ms2.count() - ms.count();
+    //taunt = taunt + " (" + to_string(d) + ")";
     return Move_response(heading, taunt);
 }
 
