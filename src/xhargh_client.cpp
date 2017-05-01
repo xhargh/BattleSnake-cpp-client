@@ -284,10 +284,10 @@ int BFS(const Battlefield &b, Point src, const Points &dests)
     return INT_MAX;
 }
 
-bool bfsSearch(const Battlefield &b, const Point &myHead, const Points &dests, Direction &heading) {
+bool bfsSearch(const Battlefield &b, const Point &myHead, const Points &dests, const std::set<Direction>& possibleMoves, Direction &heading) {
     bool headingDecided = false;
     int minDist = INT_MAX;
-    for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
+    for (auto &dir : possibleMoves) {
         if (b.allowedMove(myHead + dir)) {
             int dist = BFS(b, myHead+dir, dests);
             if (dist < minDist) {
@@ -298,6 +298,61 @@ bool bfsSearch(const Battlefield &b, const Point &myHead, const Points &dests, D
         }
     }
     return headingDecided;
+}
+
+enum Space {
+    Filled,
+    Illegal,
+    Untouched
+};
+
+/*
+    Flood-fill (node, target-color, replacement-color):
+    1. If target-color is equal to replacement-color, return.
+    2. If the color of node is not equal to target-color, return.
+    3. Set the color of node to replacement-color.
+    4. Perform Flood-fill (one step to the south of node, target-color, replacement-color).
+    Perform Flood-fill (one step to the north of node, target-color, replacement-color).
+    Perform Flood-fill (one step to the west of node, target-color, replacement-color).
+    Perform Flood-fill (one step to the east of node, target-color, replacement-color).
+    5. Return.
+*/
+void floodFill(int* field, const int width, const int height, Point p) {
+    int idx = p.x + p.y*width;
+    if (idx < 0 || idx >= width * height) {
+        return;
+    }
+    if (field[idx] == Filled) {
+        return;
+    }
+    if (field[idx] != Untouched) {
+        return;
+    }
+    field[idx] = Filled;
+    floodFill(field, width, height, p + Direction::up);
+    floodFill(field, width, height, p + Direction::down);
+    floodFill(field, width, height, p + Direction::left);
+    floodFill(field, width, height, p + Direction::right);
+}
+
+size_t emptySpace(const Battlefield& b, Point p) {
+    int *field = new int[b.width*b.height];
+    for (int x = 0; x < b.width; x++) {
+        for (int y = 0; y < b.height; y++) {
+            field[x+y*b.width] = b.allowedMove(x,y) ? Untouched : Illegal;
+        }
+    }
+    floodFill(field, b.width, b.height, p);
+    size_t area = 0;
+    for (int x = 0; x < b.width; x++) {
+        for (int y = 0; y < b.height; y++) {
+            if (field[x+y*b.width] == Filled) {
+                area++;
+            }
+        }
+    }
+    delete[] field;
+    return area;
 }
 
 // Callback that will be called on move requests.
@@ -334,18 +389,6 @@ Move_response battlesnake_move(
     auto myHead = snakes[you].coords[0];
     b.mark(myHead, '@');
 
-    // Find closest food
-    Point closestFood;
-    double minDistance = width + height;
-    for (auto &f : food) {
-        int dist = distance(f, myHead);
-        if (dist < minDistance) {
-            closestFood = f;
-            minDistance = dist;
-        }
-    }
-    b.mark(closestFood, '#');
-
     // 'iterate' one step by marking all possible next steps
     for (size_t i = 0; i < snakes.size(); i++) {
         auto &snake = snakes[i];
@@ -361,10 +404,9 @@ Move_response battlesnake_move(
         }
     }
 
-     set<Direction> allowedMoves;
+    set<Direction> allowedMoves;
 
     Direction heading = Direction::down;
-    bool headingDecided = false;
 
     // Check allowed directions
     for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
@@ -373,85 +415,39 @@ Move_response battlesnake_move(
         }
     }
 
-    // Look for closest reachable food
-    headingDecided = bfsSearch(b, myHead, food, heading);
+    bool headingDecided = false;
 
-    // If no reachable food, go for head of shorter snake (possible way out)
-    if (!headingDecided) {
-        taunt = taunt + " - Head Hunter!";
-        Points heads;
-        for (size_t i = 0; i < snakes.size(); i++) {
-            auto &snake = snakes[i];
-            Point head = snake.coords[0];
+    while (!headingDecided && allowedMoves.size() > 0) {
+        // Look for closest reachable food
+        headingDecided = bfsSearch(b, myHead, food, allowedMoves, heading);
 
-            if (i != you) {
-                for (auto &dir : {Direction::down, Direction::up, Direction::left, Direction::right}) {
-                    Point p = head + dir;
-                    if (b.allowedMove(p)) {
-                        heads.push_back(head + Direction::down);
-                    }
+        // If the area where the closest food exist, try to find another heading
+        if (headingDecided && emptySpace(b, myHead+heading) < snakes[you].coords.size() + 1) {
+            allowedMoves.erase(heading);
+            headingDecided = false;
+        } else if (!headingDecided) {
+            // no direct paths to food, go to greatest area
+            size_t greatestArea = 0;
+            for (auto &dir : allowedMoves) {
+                size_t area = emptySpace(b, myHead + dir);
+                if (area > greatestArea) {
+                    heading = dir;
+                    greatestArea = area;
                 }
             }
-        }
-        headingDecided = bfsSearch(b, myHead, heads, heading);
-    }
-
-    // If no head of shorter snake, go for any tail (possible way out)
-    if (!headingDecided) {
-        taunt = taunt + " - Tail Gater!";
-        Points tails;
-        for (size_t i = 0; i < snakes.size(); i++) {
-            auto &snake = snakes[i];
-            Point tail = snake.coords[snake.coords.size()-1];
-
-            if (b.allowedMove(tail)) {
-                tails.push_back(tail);
-            }
-        }
-        headingDecided = bfsSearch(b, myHead, tails, heading);
-    }
-
-    if (!headingDecided) {
-        // TODO: Go for greatest area...
-    }
-
-    if (!headingDecided) {
-        taunt = taunt + "???";
-
-        // Direction to closest food
-        Point p = closestFood - myHead;
-
-        bool right = allowedMoves.count(Direction::right);
-        bool left = allowedMoves.count(Direction::left);
-        bool up = allowedMoves.count(Direction::up);
-        bool down = allowedMoves.count(Direction::down);
-
-        right = right && (p.x > 0);
-        left = left && (p.x < 0);
-        up = up && (p.y < 0);
-        down = down && (p.y > 0);
-
-        if (right) {
-            heading = Direction::right;
             headingDecided = true;
-        } else if (left) {
-            heading = Direction::left;
-            headingDecided = true;
-        } else if (up) {
-            heading = Direction::up;
-            headingDecided = true;
-        } else if (down) {
-            heading = Direction::down;
-            headingDecided = true;
+
         }
     }
 
+
+/*
     if (!headingDecided) {
         // cout << "undecided" << endl;
         taunt = "Oh no! - " + taunt;
         heading = *allowedMoves.begin();
     }
-
+*/
     switch (heading) {
         case Direction::up:
             taunt += "Up";
