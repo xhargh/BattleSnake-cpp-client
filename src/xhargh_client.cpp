@@ -1,5 +1,4 @@
 #include "battlesnake_api.hpp"
-#include "util.h"
 #include <queue>
 #include <set>
 #include <climits>
@@ -140,10 +139,6 @@ public:
         delete[] grid;
     }
 
-    bool offMap(const Point p) const {
-        return offMap(p.x, p.y);
-    }
-
     bool offMap(const int x, const int y) const {
         return ((x < 0) || (y < 0) || (x >= width) || (y >= height));
     }
@@ -176,10 +171,6 @@ public:
 
     char Get(const int x, const int y) const {
         return grid[x + y * width];
-    }
-
-    char Get(const Point p) const {
-        return Get(p.x, p.y);
     }
 };
 
@@ -219,9 +210,6 @@ bool operator==(const Point &p1, const Point &p2) {
 }
 bool operator==(const Node &n1, const Node &n2) {
     return n1.idx == n2.idx;
-}
-int distance(Point p0, Point p1) {
-    return std::abs(p0.x - p1.x) + std::abs(p0.y - p1.y);
 }
 
 struct queueNode
