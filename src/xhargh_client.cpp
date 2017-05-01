@@ -285,22 +285,6 @@ int BFS(const Battlefield &b, Point src, const Points &dests)
     return INT_MAX;
 }
 
-bool bfsSearch(const Battlefield &b, const Point &myHead, const Points &dests, const std::set<Direction>& possibleMoves, Direction &heading) {
-    bool headingDecided = false;
-    int minDist = INT_MAX;
-    for (auto &dir : possibleMoves) {
-        if (b.allowedMove(myHead + dir)) {
-            int dist = BFS(b, myHead+dir, dests);
-            if (dist < minDist) {
-                minDist = dist;
-                heading = dir;
-                headingDecided = true;
-            }
-        }
-    }
-    return headingDecided;
-}
-
 enum Space {
     Filled,
     Illegal,
@@ -319,10 +303,11 @@ enum Space {
     5. Return.
 */
 void floodFill(int* field, const int width, const int height, Point p) {
-    int idx = p.x + p.y*width;
-    if (idx < 0 || idx >= width * height) {
+    if (p.x < 0 || p.y < 0 || p.x >= width || p.y >= height) {
         return;
     }
+    int idx = p.x + p.y*width;
+
     if (field[idx] == Filled) {
         return;
     }
@@ -418,19 +403,37 @@ Move_response battlesnake_move(
 
     bool headingDecided = false;
 
-    while (!headingDecided && allowedMoves.size() > 0) {
-        // Look for closest reachable food
-        headingDecided = bfsSearch(b, myHead, food, allowedMoves, heading);
+    map<Direction, int> bfsResults;
+    map<Direction, size_t> areas;
 
-        // If the area where the closest food exist, try to find another heading
-        if (headingDecided && emptySpace(b, myHead+heading) < snakes[you].coords.size() + 1) {
+    // Precalculate vfs distance and areas
+    for (auto &dir : allowedMoves) {
+        bfsResults[dir] = BFS(b, myHead+dir, food);
+        areas[dir] = emptySpace(b, myHead+dir);
+    }
+
+    while (!headingDecided && allowedMoves.size() > 0) {
+
+        // Look for closest reachable food
+        int minDist = INT_MAX;
+        for (auto &dir : allowedMoves) {
+            int dist = bfsResults[dir];
+            if (dist < minDist) {
+                minDist = dist;
+                heading = dir;
+                headingDecided = true;
+            }
+        }
+
+        // If the area where the closest food is too small, try to find another heading
+        if (headingDecided && areas[heading] < snakes[you].coords.size() + 1) {
             allowedMoves.erase(heading);
             headingDecided = false;
         } else if (!headingDecided) {
             // no direct paths to food, go to greatest area
             size_t greatestArea = 0;
-            for (auto &dir : allowedMoves) {
-                size_t area = emptySpace(b, myHead + dir);
+            for (auto &dir : {Direction::up, Direction::down, Direction::left, Direction::right}) {
+                size_t area = areas[dir];
                 if (area > greatestArea) {
                     heading = dir;
                     greatestArea = area;
