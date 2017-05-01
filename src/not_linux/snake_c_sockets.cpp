@@ -184,6 +184,7 @@ std::string SnakeMoveListener::parseStart(const char * const cbuf) {
     "Your mother smells of elderberries!",
     SH_FANG,
     ST_CURLED,
+    "http://placecage.com/c/100/100"
   };
 
   try {
@@ -224,6 +225,10 @@ std::string SnakeMoveListener::parseStart(const char * const cbuf) {
 
   rval["head_type"] = SnakeHeadStr(out.head_type);
   rval["tail_type"] = SnakeTailStr(out.tail_type);
+  
+  if (out.head_url) {
+    rval["head_url"] = out.head_url;
+  }
 
   return rval.dump();
 }
