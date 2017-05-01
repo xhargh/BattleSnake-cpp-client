@@ -54,7 +54,8 @@ std::vector<std::string> name = {
         "Dagge Daggmask",
         "Severus Snake",
         "Lindorm",
-        "Sir Pants"
+        "Sir Pants",
+        "Slingersvans"
 };
 
 std::vector<std::string> headType = {
@@ -91,12 +92,13 @@ nlohmann::json battlesnake_start(const std::string &game_id, const int width, co
     int g = rand() % 128 + 128;
     int b = rand() % 128 + 128;
     color << "#" << std::hex << r << g << b;
-    std::cout << "color : " << color.str() << std::endl;
+    std::string n = name[rand() % name.size()];
+    std::cout << "color : " << color.str() << "   " << n << std::endl;
     return {
             {"color",           color.str()},
             {"secondary_color", "#ffffff"},
             //{"head_url", "http://placecage.com/c/100/100"},
-            {"name",            name[rand() % name.size()]},
+            {"name",            n},
             {"taunt",           "OH GOD NOT THE BEES"},
             {"head_type",       headType[rand() % headType.size()]},
             {"tail_type",       tailType[rand() % tailType.size()]}
@@ -134,8 +136,7 @@ public:
             return false;
         }
         char pt = grid[x + y * width];
-        return ('#' == pt) || // closest food
-               ('*' == pt) || // other food
+        return ('*' == pt) || // other food
                ('.' == pt) || // clear field
                (',' == pt) || // tail
                ('o' == pt);   // head of shorter snake
