@@ -33,16 +33,16 @@ static void snake_start(
 
 // ////////////////////////////////////////////////////////////////////////////
 // Callback called when it's time to make a new move.
-static void snake_move(
+static SnakeDirectionE snake_move(
   void * const pUserData,
   const char * const pGameId,
   const MoveInput * const pMoveInput,
-  MoveOutput * const pMoveOutput) {
-
+  const char ** ppTauntOut) {
+  SnakeDirectionE dir = DIR_DOWN;
   printf("Got move for game %s!\r\n", pGameId);
 
   if (pMoveInput->numFood <= 0) {
-    SnakeDoMove(pMoveOutput, DIR_DOWN, "No food!  Let's go DOOOWN!");
+    *ppTauntOut = "No food!  Let's go DOOOWN!";
   }
   else {
 
@@ -59,18 +59,23 @@ static void snake_move(
     SnakeBattlefieldFree(pB);
 
     if (food0.y > head.y) {
-      SnakeDoMove(pMoveOutput, DIR_DOWN, "Watch out! Going down!!!");
+      *ppTauntOut = "Watch out! Going down!!!";
+      dir = DIR_DOWN;
     }
     else if (food0.y < head.y) {
-      SnakeDoMove(pMoveOutput, DIR_UP, "Going up up up!!!");
+      *ppTauntOut = "Going up up up!!!";
+      dir = DIR_UP;
     }
     else if (food0.x < head.x) {
-      SnakeDoMove(pMoveOutput, DIR_LEFT, "Left we go!!!");
+      *ppTauntOut = "Left we go!!!";
+      dir = DIR_LEFT;
     }
     else {
-      SnakeDoMove(pMoveOutput, DIR_RIGHT, "Food!!! Yummy!");
+      *ppTauntOut = "Food!!! Yummy!";
+      dir = DIR_RIGHT;
     }
   }
+  return dir;
 }
 
 const SnakeCallbacks stupid_snake = {

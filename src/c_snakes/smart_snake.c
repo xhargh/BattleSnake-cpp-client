@@ -38,18 +38,18 @@ static void snake_start(
 
 // ////////////////////////////////////////////////////////////////////////////
 // Callback called when it's time to make a new move.
-static void snake_move(
+static SnakeDirectionE snake_move(
   void * const pUserData,
   const char * const pGameId,
   const MoveInput * const pMoveInput,
-  MoveOutput * const pMoveOutput) {
+  const char ** ppTauntOut) {
   int heading = -1;
 
   printf("Got move for game %s!\r\n", pGameId);
 
   if (pMoveInput->numFood <= 0) {
-    SnakeDoMove(pMoveOutput, DIR_DOWN, "No food!  Let's go DOOOWN!");
-    return;
+    *ppTauntOut = "No food!  Let's go DOOOWN!";
+    return DIR_DOWN;
   }
 
   const int width = pMoveInput->width;
@@ -133,7 +133,8 @@ static void snake_move(
   }
   SnakeBattlefieldFree(pB);
 
-  SnakeDoMove(pMoveOutput, (SnakeDirectionE)heading, "Kill!");
+  *ppTauntOut = "Kill!";
+  return (SnakeDirectionE)heading;
 }
 
 const SnakeCallbacks smart_snake = {

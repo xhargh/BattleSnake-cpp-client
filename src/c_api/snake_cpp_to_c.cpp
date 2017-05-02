@@ -97,7 +97,6 @@ Move_response battlesnake_move(
         const size_t my_snake_index) {
 
 	MoveInput moveInput;
-	MoveOutput moveOutput;
 
 	moveInput.numFood = food.size();
 	moveInput.foodArr = (Coords *)calloc(moveInput.numFood, sizeof(Coords));
@@ -129,20 +128,24 @@ Move_response battlesnake_move(
 		}
 	}
 
+	char tmp[SNAKE_STRLEN + 1];
+	strncpy(tmp, "...", 4);
+	char * pTaunt = tmp;
+	SnakeDirectionE dir = DIR_DOWN;
 	if (sctc_ps){
     	mutex.lock();
-    	sctc_ps->Move(sctc_pu, game_id.c_str(), &moveInput, &moveOutput);
+    	dir = sctc_ps->Move(sctc_pu, game_id.c_str(), &moveInput, &pTaunt);
     	mutex.unlock();
-    }
+  }
 
 	auto d = Direction::up;
-	switch(moveOutput.dir){
+	switch(dir){
 	case DIR_UP: d = Direction::up; break;
 	case DIR_LEFT: d = Direction::left; break;
 	case DIR_DOWN: d = Direction::down; break;
 	case DIR_RIGHT: default: d = Direction::right; break;
 	}
-    auto rval = Move_response( d, moveOutput.taunt );
+  auto rval = Move_response( d, pTaunt );
 
     for (int s = 0; s < moveInput.numSnakes; s++){
     	SnakeT *ps = &moveInput.snakesArr[s];

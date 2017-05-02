@@ -17,9 +17,6 @@ const char * SnakeTailStr(const SnakeTailTypeE tail);
 // Utility: Get a character string for the direction
 const char * SnakeDirStr(const SnakeDirectionE dir);
 
-// Helper function to allow the pMoveOut struct to be set with a single line of code.
-void SnakeDoMove(MoveOutput *const pMoveOut, const SnakeDirectionE dir, const char * const taunt);
-
 // A battlefield allows printing out of the current state of the field.
 typedef struct BattlefieldTag {
   int width;

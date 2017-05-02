@@ -106,18 +106,8 @@ typedef struct MoveInputTag {
 } MoveInput;
 
 
-// Your snake shall set up this struct with its desired direction.
-typedef struct MoveOutputTag {
-
-  // Choose a direction for the snake.
-  SnakeDirectionE dir;
-
-  // Choose a taunt for the snake.
-  char            taunt[SNAKE_STRLEN + 1];
-} MoveOutput;
-
 // The move function prototype
-typedef void(*SnakeMoveFn)(
+typedef SnakeDirectionE (*SnakeMoveFn)(
 
   // Data that you passed into the call to SnakeSnart().  You might
   // not need this..
@@ -129,8 +119,8 @@ typedef void(*SnakeMoveFn)(
   // Data you will need to determine where to move.
   const MoveInput * const pMoveInput,
 
-  // Your snake logic needs to update this structure.
-  MoveOutput * const pMoveOutput
+  // Your snake logic needs to update this taunt if it wants to output a taunt
+  char name[SNAKE_STRLEN + 1]
 );
 
 
