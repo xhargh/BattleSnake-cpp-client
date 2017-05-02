@@ -57,7 +57,7 @@ typedef struct StartOutputTag {
   SnakeTailTypeE  tail_type;
 
   // Point this at a const url.
-  //const char     *head_url;
+  const char     *head_url;
 } StartOutputT;
 
 typedef void(*SnakeStartFn)(
