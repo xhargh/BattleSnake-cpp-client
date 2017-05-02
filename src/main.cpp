@@ -6,7 +6,7 @@
 
 int main() {
     Net::Ipv4 ip = Net::Ipv4::any();
-    uint16_t port = 8056;
+    uint16_t port = 8057;
 
     std::cout << "Serving Battlesnake client on " << ip.toString() << ":" << port << std::endl;
 

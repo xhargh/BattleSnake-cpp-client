@@ -7,96 +7,15 @@
 static int seed = time(NULL);
 
 std::vector<std::string> name = {
-        "Sir Väs",
-        "Ormen Långe",
-        "Gorm",
-        "Snakey Bastard",
-        "Natrix",
-        "Röde Orm",
-        "Basil",
-        "Boomer",
-        "Slinky",
-        "Nagini",
-        "Kaa",
-        "Salazar Slytherin",
-        "Vipera",
-        "Sir Francis Snake",
-        "Knut",
-        "Fafne",
-        "Ormurin Langi",
-        "Black Adder",
-        "Adderall",
-        "Serpentin",
-        "Jörmungandr",
-        "Nidhögg",
-        "Elon Mask",
-        "The Mask",
-        "Slangen",
-        "Doktor Snok",
-        "Slinger",
-        "Bo A. Orm",
-        "Kramer",
-        "Tungur Dubblur",
-        "Essi Äsping",
-        "Ormtunga",
-        "Rattler",
-        "Wormtongue",
-        "Constrictadore",
-        "Snake Rattlenroll",
-        "Orminge",
-        "Anja Konda",
-        "Ormega",
-        "Serpentina",
-        "Snokrates",
-        "Ouroboros",
-        "Nibbles",
-        "Masken Mimmi",
-        "Dagge Daggmask",
-        "Severus Snake",
-        "Lindorm",
-        "Sir Pants",
-        "Slingersvans",
-        "Eelrond",
-        "Earthworm Jim",
-        "Orme",
-        "Wurm",
-        "Wormley",
-        "Medusa",
-        "Monty",
-        "William Snakespeare",
-        "Asmodeus Poisonteeth",
-        "Mr. Crowley",
-        "Nag",
-        "Nagaina",
-        "Salmissra",
-        "Sammy the Snake",
-        "Slither",
-        "Fang"
+        "SnAcorn"
 };
 
 std::vector<std::string> headType = {
-    "bendr",
-    "dead",
     "fang",
-    "pixel",
-    "regular",
-    "safe",
-    "sand-worm",
-    "shades",
-    "smile",
-    "tongue"
 };
 
 std::vector<std::string> tailType = {
-    "small-rattle",
-    "skinny-tail",
-    "round-bum",
-    "regular",
     "pixel",
-    "freckled",
-    "fat-rattle",
-    "curled",
-    "block-bum"
 };
 
 // Callback that will be called when a new game starts (on start request).
@@ -104,12 +23,9 @@ std::vector<std::string> tailType = {
 nlohmann::json battlesnake_start(const std::string &game_id, const int width, const int height) {
     srand(seed++);
     std::ostringstream color;
-    int r = rand() % 128 + 128;
-    int g = rand() % 128 + 128;
-    int b = rand() % 128 + 128;
-    color << "#" << std::hex << r << g << b;
+    color << "magenta";
     std::string n = name[rand() % name.size()];
-    std::cout << "color : " << color.str() << "   " << n << std::endl;
+    std::cout << "color : magenta" << color.str() << "   " << n << std::endl;
     return {
             {"color",           color.str()},
             {"secondary_color", "#ffffff"},
