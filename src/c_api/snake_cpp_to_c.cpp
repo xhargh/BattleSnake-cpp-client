@@ -12,9 +12,8 @@
 #include "c_api/snake_c_api.h"
 #include "c_api/snake_c_utils.h"
 
-#include "c_snakes/stupid_snake.h"
-#include "c_snakes/smarter_snake.h"
-#include "c_snakes/smart_snake.h"
+#include "c_snakes/circle_snake.h"
+#include "c_snakes/random_snake.h"
 #include <mutex>
 
 char * main_get_argv2();
@@ -40,22 +39,18 @@ nlohmann::json battlesnake_start(const std::string& game_id, const Index width, 
     if (argv2){
 		switch (argv2[0]){
 			case '1': {
-				std::cout << "Set stupid snake as your main competitor." << std::endl;
-				snake_c_callbacks_set( &stupid_snake, NULL );
-			} break;
-			case '2': {
-				std::cout << "Set smart snake as your main competitor." << std::endl;
-				snake_c_callbacks_set( &smart_snake, NULL );
+				std::cout << "Set circle snake as your main competitor." << std::endl;
+				snake_c_callbacks_set( &circle_snake, NULL );
 			} break;
 			default: {
-				std::cout << "Set smarter snake as your main competitor." << std::endl;
-				snake_c_callbacks_set( &smarter_snake, NULL );
+                std::cout << "Set random snake as your main competitor." << std::endl;
+                snake_c_callbacks_set( &random_snake, NULL );
 			} break;
 		}
     }
 	else {
-		snake_c_callbacks_set( &smarter_snake, NULL );
-		std::cout << "Set stupid snake as your main competitor." << std::endl;
+		snake_c_callbacks_set( &circle_snake, NULL );
+		std::cout << "Set circle snake as your main competitor." << std::endl;
     }
 
     StartOutputT startOutput = {
