@@ -33,7 +33,6 @@ static void snake_start(
 
 }
 
-#define M_PI 3.14159265359
 
 // ////////////////////////////////////////////////////////////////////////////
 static int checkHeading(int heading, bool canGoUp, bool canGoDown, bool canGoLeft, bool canGoRight) {
