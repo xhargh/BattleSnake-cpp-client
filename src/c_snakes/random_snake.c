@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
 #ifdef __cplusplus
@@ -67,7 +68,6 @@ static void snake_move(
   SnakeT * const pMe = &pMoveInput->snakesArr[pMoveInput->yourSnakeIdx];
   const Coords head = pMe->coordsArr[0];
   const Coords tail = pMe->coordsArr[1];
-  const Coords food = pMoveInput->foodArr[0];
   const bool goingLeft = head.x < tail.x;
   const bool goingRight = head.x > tail.x;
   const bool goingUp = head.y < tail.y;
@@ -76,35 +76,9 @@ static void snake_move(
   const bool canGoUp = (head.y > 0) && (!goingDown);
   const bool canGoRight = (head.x < (width - 1)) && (!goingLeft);
   const bool canGoLeft = (head.x > 0) && (!goingRight);
-  const double foodDistanceLast = sqrt(powf(food.x - tail.x, 2) + powf(food.y - tail.y, 2));
-  const double foodDistance = sqrt(powf(food.x-head.x,2) + powf(food.y-head.y,2));
-  if (foodDistance <= 1.01) {
-    if (food.x == head.x - 1) {
-      heading = DIR_LEFT;
-    }
-    else if (food.x == head.x + 1) {
-      heading = DIR_RIGHT;
-    }
-    else if (food.y == head.y - 1) {
-      heading = DIR_UP;
-    }
-    else if (food.y == head.y + 1) {
-      heading = DIR_DOWN;
-    }
-  }
-  if (heading < 0){
-    const bool hotter = foodDistance < foodDistanceLast;
-    if (hotter) {
-      heading = goingLeft ? DIR_LEFT : heading;
-      heading = goingRight ? DIR_RIGHT : heading;
-      heading = goingUp ? DIR_UP : heading;
-      heading = goingDown ? DIR_DOWN : heading;
-      heading = checkHeading(heading, canGoUp, canGoDown, canGoLeft, canGoRight);
-    }
-    while (heading < 0) {
-      heading = rand() % 4;
-      heading = checkHeading(heading, canGoUp, canGoDown, canGoLeft, canGoRight);
-    }
+  while (heading < 0) {
+    heading = rand() % 4;
+    heading = checkHeading(heading, canGoUp, canGoDown, canGoLeft, canGoRight);
   }
   SnakeDoMove(pMoveOutput, heading, "I decided this.");
 }
