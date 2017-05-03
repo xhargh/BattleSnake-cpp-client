@@ -193,9 +193,9 @@ std::string SnakeMoveListener::parseStart(const char * const cbuf) {
       const std::string game_id = req["game_id"].get<std::string>();
       auto width = req["width"].get<int>();
       auto height = req["height"].get<int>();
-      mMutex.lock();
+      //mMutex.lock();
       mpSnake->Start(mpUserData, game_id.c_str(), width, height, &out);
-      mMutex.unlock();
+      //mMutex.unlock();
     }
   }
   catch (std::exception& e) {
@@ -333,9 +333,9 @@ std::string SnakeMoveListener::parseMove(const char * const cbuf) {
       moveInput.width = req["width"].get<int>();
       moveInput.height = req["height"].get<int>();
 
-      mMutex.lock();
+      //mMutex.lock();
       mpSnake->Move(mpUserData, game_id.c_str(), &moveInput, &moveOutput);
-      mMutex.unlock();
+      //mMutex.unlock();
       
       // Handle output of the move call
       rval["move"] = SnakeDirStr(moveOutput.dir);
