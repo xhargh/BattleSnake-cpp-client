@@ -6,9 +6,8 @@
 // individual process.
 
 #include "c_api/snake_c_api.h"
-#include "c_snakes/stupid_snake.h"
-#include "c_snakes/smart_snake.h"
-#include "c_snakes/smarter_snake.h"
+#include "c_snakes/circle_snake.h"
+#include "c_snakes/random_snake.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -16,7 +15,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 int main(int argv, char **argc)
 {
-  const SnakeCallbacks *pCallbacks = &stupid_snake;
+  const SnakeCallbacks *pCallbacks = &random_snake;
 
   if (argv == 1){
 	  printf("Usage: ./c_snakes <PORT> \r\n");
@@ -33,11 +32,9 @@ int main(int argv, char **argc)
   if (argv > 2) {
     char *szNum = argc[2];
     switch (szNum[0]) {
-    case '1': pCallbacks = &smart_snake;
+    case '1': pCallbacks = &circle_snake;
       break;
-    case '2': pCallbacks = &smarter_snake;
-      break;
-    default: pCallbacks = &stupid_snake;
+    default: pCallbacks = &random_snake;
       break;
     }
   }

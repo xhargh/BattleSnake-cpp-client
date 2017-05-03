@@ -7,7 +7,7 @@
 extern "C"{
 #endif
 
-extern const SnakeCallbacks stupid_snake;
+extern const SnakeCallbacks random_snake;
 
 #ifdef __cplusplus
 }

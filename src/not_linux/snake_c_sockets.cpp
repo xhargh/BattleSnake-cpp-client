@@ -184,7 +184,7 @@ std::string SnakeMoveListener::parseStart(const char * const cbuf) {
     "Your mother smells of elderberries!",
     SH_FANG,
     ST_CURLED,
-    "http://placecage.com/c/100/100"
+    "",//"http://placecage.com/c/100/100"
   };
 
   try {
