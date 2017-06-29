@@ -89,7 +89,6 @@ std::vector<std::string> headType = {
 
 std::vector<std::string> tailType = {
     "small-rattle",
-    "skinny-tail",
     "round-bum",
     "regular",
     "pixel",
